@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CasaMeets Property Management</title>
+    <link href='https://unpkg.com/@fullcalendar/core@5.10.1/main.css' rel='stylesheet' />
+    <link href='https://unpkg.com/@fullcalendar/daygrid@5.10.1/main.css' rel='stylesheet' />
+    <link href='https://unpkg.com/@fullcalendar/timegrid@5.10.1/main.css' rel='stylesheet' />
+    <script src='https://unpkg.com/@fullcalendar/core@5.10.1/main.js'></script>
+    <script src='https://unpkg.com/@fullcalendar/daygrid@5.10.1/main.js'></script>
+    <script src='https://unpkg.com/@fullcalendar/timegrid@5.10.1/main.js'></script>
+</head>
+<body>
+    <h1>CasaMeets Property Management</h1>
+    <div id="calendar"></div>
+    <button id="exportPdf">Export as PDF</button>
+    <input type="file" id="incident-photo" accept="image/*" />
+    <button id="log-incident">Log Incident</button>
+    <script>
+        // FullCalendar initialization
+        document.addEventListener('DOMContentLoaded', function() {
+            var calendarEl = document.getElementById('calendar');
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                events: [],
+                dateClick: function(info) {
+                    alert('Date: ' + info.dateStr);
+                }
+            });
+            calendar.render();
+        });
+
+        // Incident logging functionality
+        document.getElementById('log-incident').addEventListener('click', function() {
+            var fileInput = document.getElementById('incident-photo');
+            if (fileInput.files.length > 0) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const incidentData = {
+                        photo: event.target.result,
+                        date: new Date().toISOString(),
+                    };
+                    localStorage.setItem('incident-' + Date.now(), JSON.stringify(incidentData));
+                    alert('Incident logged!');
+                };
+                reader.readAsDataURL(fileInput.files[0]);
+            } else {
+                alert('Please select a photo to upload.');
+            }
+        });
+
+        // PDF export functionality
+        document.getElementById('exportPdf').addEventListener('click', function() {
+            alert('Exporting as PDF...');
+            // Implement PDF export logic here
+        });
+    </script>
+</body>
+</html>
