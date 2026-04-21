@@ -11,14 +11,13 @@
         body { font-family: 'Segoe UI', Arial, sans-serif; background: #f4f7f6; margin: 0; padding: 10px; color: #333; }
         .container { max-width: 600px; margin: auto; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         h1, h2 { text-align: center; color: var(--oscuro); margin-bottom: 10px; }
-        .btn { padding: 10px; border: none; border-radius: 6px; color: white; cursor: pointer; font-weight: bold; font-size: 14px; transition: 0.2s; }
-        .btn:active { transform: scale(0.98); }
+        .btn { padding: 12px; border: none; border-radius: 8px; color: white; cursor: pointer; font-weight: bold; font-size: 14px; transition: 0.2s; }
+        .btn:active { transform: scale(0.95); }
         .vivienda-card { background: #fff; border: 1px solid #ddd; padding: 15px; margin-bottom: 10px; border-radius: 8px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
-        #calendar { margin: 15px 0; background: white; font-size: 0.9em; }
-        /* Estilos para forzar el español en el calendario */
-        .fc-header-toolbar { font-size: 0.8em; flex-wrap: wrap; gap: 5px; }
+        #calendar { margin: 15px 0; background: white; font-size: 0.9em; border: 1px solid #eee; border-radius: 8px; padding: 5px; }
+        .fc-header-toolbar { font-size: 0.85em; flex-wrap: wrap; gap: 5px; }
         .incidencia-item { border-left: 5px solid var(--rojo); background: #fff5f5; padding: 10px; margin: 8px 0; border-radius: 4px; list-style: none; font-size: 14px; }
-        .img-preview { max-width: 100%; height: auto; display: block; margin-top: 8px; border-radius: 5px; }
+        .img-preview { max-width: 100%; height: auto; display: block; margin-top: 8px; border-radius: 5px; border: 1px solid #ccc; }
         .hidden { display: none; }
         input[type="text"] { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
         .botones-visita { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin: 10px 0; }
@@ -30,7 +29,7 @@
 <div class="container" id="main-view">
     <h1>🏠 Mis Viviendas</h1>
     <div style="margin-bottom: 15px;">
-        <input type="text" id="nombreVivienda" placeholder="Nombre de la vivienda...">
+        <input type="text" id="nombreVivienda" placeholder="Ej: Calle Mayor 5 / Casa Playa">
         <button class="btn" style="background: var(--verde); width: 100%;" onclick="agregarVivienda()">+ AÑADIR VIVIENDA</button>
     </div>
     <div id="listaViviendas"></div>
@@ -42,10 +41,10 @@
         <button class="btn" style="background: var(--oscuro);" onclick="generarPDF()">📄 Informe PDF</button>
     </div>
     
-    <h2 id="tituloVivienda"></h2>
+    <h2 id="tituloVivienda" style="background: #eee; padding: 5px; border-radius: 5px;"></h2>
 
-    <div style="background: #f8f9fa; padding: 12px; border-radius: 8px; text-align: center;">
-        <small>Registrar visita para HOY:</small>
+    <div style="background: #e9ecef; padding: 12px; border-radius: 8px; text-align: center; margin-top: 10px;">
+        <small><strong>PULSA COLOR PARA REGISTRAR HOY:</strong></small>
         <div class="botones-visita">
             <button class="btn" style="background: var(--azul);" onclick="registrarVisita('#007bff', 'Normal')">AZUL</button>
             <button class="btn" style="background: var(--rojo);" onclick="registrarVisita('#dc3545', 'Urgente')">ROJO</button>
@@ -57,7 +56,7 @@
 
     <hr>
     <h3>📝 Incidencias y Fotos</h3>
-    <input type="text" id="textoIncidencia" placeholder="¿Qué ha pasado hoy?">
+    <input type="text" id="textoIncidencia" placeholder="Describe avería o nota...">
     <div style="display: flex; flex-direction: column; gap: 10px;">
         <input type="file" id="fotoIncidencia" accept="image/*" capture="environment">
         <button class="btn" style="background: var(--verde);" onclick="agregarIncidencia()">GUARDAR INCIDENCIA</button>
@@ -66,7 +65,7 @@
 </div>
 
 <script>
-    let viviendas = JSON.parse(localStorage.getItem('viviendas_data_v3')) || {};
+    let viviendas = JSON.parse(localStorage.getItem('viviendas_v4_def')) || {};
     let viviendaActual = "";
     let calendar;
 
@@ -88,7 +87,7 @@
             lista.innerHTML += `
                 <div class="vivienda-card" onclick="abrirVivienda('${nombre}')">
                     <strong>${nombre}</strong>
-                    <span style="color: var(--azul);">Ver →</span>
+                    <span style="color: var(--azul); font-weight:bold;">ABRIR →</span>
                 </div>`;
         });
     }
@@ -104,8 +103,8 @@
             if(calendar) calendar.destroy();
             calendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: 'dayGridMonth',
-                locale: 'es', // FORZAR ESPAÑOL
-                firstDay: 1, // Lunes como primer día
+                locale: 'es', // IDIOMA ESPAÑOL
+                firstDay: 1,  // EMPEZAR EN LUNES
                 buttonText: { today: 'Hoy' },
                 headerToolbar: { left: 'prev,next', center: 'title', right: 'today' },
                 events: viviendas[viviendaActual].visitas,
@@ -117,23 +116,23 @@
     }
 
     function registrarVisita(color, tipo) {
-        const hoy = new Date().toISOString().split('T')[0];
+        const hoy = new Date().toLocaleDateString('sv-SE'); // Formato AAAA-MM-DD
         const nuevaVisita = { title: tipo, start: hoy, backgroundColor: color, borderColor: color, allDay: true };
         
-        // Evitar duplicados el mismo día
+        // Evitar que el mismo día tenga dos colores (borra el anterior si existe hoy)
         viviendas[viviendaActual].visitas = viviendas[viviendaActual].visitas.filter(v => v.start !== hoy);
         viviendas[viviendaActual].visitas.push(nuevaVisita);
         
         guardar();
         calendar.removeAllEvents();
         calendar.addEventSource(viviendas[viviendaActual].visitas);
-        alert("Guardado: Visita " + tipo);
+        alert("¡Registrado hoy como " + tipo + "!");
     }
 
     function agregarIncidencia() {
         const texto = document.getElementById('textoIncidencia').value.trim();
         const fileInput = document.getElementById('fotoIncidencia');
-        if (!texto) return;
+        if (!texto) { alert("Escribe qué ha pasado"); return; }
 
         if (fileInput.files && fileInput.files[0]) {
             const reader = new FileReader();
@@ -171,28 +170,30 @@
     function generarPDF() {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
-        doc.text(`INFORME DE GESTIÓN: ${viviendaActual}`, 10, 20);
-        let y = 30;
+        doc.setFontSize(16);
+        doc.text(`INFORME DE MANTENIMIENTO: ${viviendaActual}`, 10, 20);
+        doc.setFontSize(10);
+        let y = 35;
         
-        doc.text("Visitas realizadas:", 10, y);
-        y += 10;
+        doc.text("REGISTRO DE VISITAS:", 10, y);
+        y += 8;
         viviendas[viviendaActual].visitas.forEach(v => {
-            doc.text(`- ${v.start}: ${v.title}`, 15, y);
-            y += 7;
+            doc.text(`- Día ${v.start}: Visita ${v.title}`, 15, y);
+            y += 6;
         });
 
         y += 10;
-        doc.text("Incidencias:", 10, y);
-        y += 10;
+        doc.text("INCIDENCIAS Y NOTAS:", 10, y);
+        y += 8;
         viviendas[viviendaActual].incidencias.forEach(i => {
-            doc.text(`- ${i.fecha}: ${i.texto}`, 15, y);
-            y += 7;
+            doc.text(`- [${i.fecha}] ${i.texto}`, 15, y);
+            y += 6;
         });
         
         doc.save(`Informe_${viviendaActual}.pdf`);
     }
 
-    function guardar() { localStorage.setItem('viviendas_data_v3', JSON.stringify(viviendas)); }
+    function guardar() { localStorage.setItem('viviendas_v4_def', JSON.stringify(viviendas)); }
     function volver() { document.getElementById('main-view').classList.remove('hidden'); document.getElementById('detail-view').classList.add('hidden'); }
 
     renderLista();
