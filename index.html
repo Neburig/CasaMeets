@@ -7,64 +7,66 @@
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
-        :root { --azul: #007bff; --rojo: #dc3545; --amarillo: #ffc107; --verde: #28a745; }
-        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f4f7f6; margin: 0; padding: 15px; color: #333; }
-        .container { max-width: 700px; margin: auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        h1, h2 { text-align: center; color: #2c3e50; }
-        .btn { padding: 12px; border: none; border-radius: 8px; color: white; cursor: pointer; font-weight: bold; margin: 5px; font-size: 14px; }
-        .vivienda-card { background: #fff; border: 1px solid #ddd; padding: 15px; margin-bottom: 10px; border-radius: 10px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: 0.3s; }
-        .vivienda-card:hover { background: #f9f9f9; border-color: var(--azul); }
-        #calendar { margin: 20px 0; background: white; padding: 10px; border-radius: 10px; border: 1px solid #eee; }
-        .incidencia-item { border-left: 5px solid var(--rojo); background: #fff5f5; padding: 12px; margin: 10px 0; border-radius: 5px; list-style: none; }
-        .img-preview { max-width: 100%; height: auto; display: block; margin-top: 10px; border-radius: 8px; border: 1px solid #ddd; }
+        :root { --azul: #007bff; --rojo: #dc3545; --amarillo: #ffc107; --verde: #28a745; --oscuro: #2c3e50; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f4f7f6; margin: 0; padding: 10px; color: #333; }
+        .container { max-width: 600px; margin: auto; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        h1, h2 { text-align: center; color: var(--oscuro); margin-bottom: 10px; }
+        .btn { padding: 10px; border: none; border-radius: 6px; color: white; cursor: pointer; font-weight: bold; font-size: 14px; transition: 0.2s; }
+        .btn:active { transform: scale(0.98); }
+        .vivienda-card { background: #fff; border: 1px solid #ddd; padding: 15px; margin-bottom: 10px; border-radius: 8px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        #calendar { margin: 15px 0; background: white; font-size: 0.9em; }
+        /* Estilos para forzar el español en el calendario */
+        .fc-header-toolbar { font-size: 0.8em; flex-wrap: wrap; gap: 5px; }
+        .incidencia-item { border-left: 5px solid var(--rojo); background: #fff5f5; padding: 10px; margin: 8px 0; border-radius: 4px; list-style: none; font-size: 14px; }
+        .img-preview { max-width: 100%; height: auto; display: block; margin-top: 8px; border-radius: 5px; }
         .hidden { display: none; }
-        input[type="text"] { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
-        .botones-visita { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; margin: 15px 0; }
+        input[type="text"] { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+        .botones-visita { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin: 10px 0; }
+        .fc-toolbar-title { text-transform: capitalize; }
     </style>
 </head>
 <body>
 
 <div class="container" id="main-view">
     <h1>🏠 Mis Viviendas</h1>
-    <p style="text-align:center; color: #666;">Registra y gestiona tus mantenimientos</p>
-    <div style="margin-bottom: 20px;">
-        <input type="text" id="nombreVivienda" placeholder="Ej: Apartamento Playa / Calle Mayor 5">
-        <button class="btn" style="background: var(--verde); width: 100%;" onclick="agregarVivienda()">+ Añadir Nueva Vivienda</button>
+    <div style="margin-bottom: 15px;">
+        <input type="text" id="nombreVivienda" placeholder="Nombre de la vivienda...">
+        <button class="btn" style="background: var(--verde); width: 100%;" onclick="agregarVivienda()">+ AÑADIR VIVIENDA</button>
     </div>
     <div id="listaViviendas"></div>
 </div>
 
 <div class="container hidden" id="detail-view">
-    <div style="display: flex; justify-content: space-between;">
+    <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
         <button class="btn" style="background: #6c757d;" onclick="volver()">← Volver</button>
-        <button class="btn" style="background: #333;" onclick="generarPDF()">📄 Informe PDF</button>
+        <button class="btn" style="background: var(--oscuro);" onclick="generarPDF()">📄 Informe PDF</button>
     </div>
     
     <h2 id="tituloVivienda"></h2>
 
-    <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; text-align: center;">
-        <strong>Registrar Visita en el Calendario:</strong>
+    <div style="background: #f8f9fa; padding: 12px; border-radius: 8px; text-align: center;">
+        <small>Registrar visita para HOY:</small>
         <div class="botones-visita">
-            <button class="btn" style="background: var(--azul);" onclick="registrarVisita('#007bff', 'Ordinaria')">Ordinaria</button>
-            <button class="btn" style="background: var(--rojo);" onclick="registrarVisita('#dc3545', 'Extra')">Extra</button>
-            <button class="btn" style="background: var(--amarillo); color: black;" onclick="registrarVisita('#ffc107', 'PENDIENTE')">Pendiente</button>
+            <button class="btn" style="background: var(--azul);" onclick="registrarVisita('#007bff', 'Normal')">AZUL</button>
+            <button class="btn" style="background: var(--rojo);" onclick="registrarVisita('#dc3545', 'Urgente')">ROJO</button>
+            <button class="btn" style="background: var(--amarillo); color: black;" onclick="registrarVisita('#ffc107', 'PENDIENTE')">AMARILLO</button>
         </div>
     </div>
 
     <div id="calendar"></div>
 
     <hr>
-    <h3>⚠️ Registro de Incidencias</h3>
-    <input type="text" id="textoIncidencia" placeholder="Describe el problema o avería...">
-    <div style="display: flex; gap: 5px; align-items: center;">
-        <input type="file" id="fotoIncidencia" accept="image/*" style="font-size: 12px;">
-        <button class="btn" style="background: var(--verde);" onclick="agregarIncidencia()">Guardar</button>
+    <h3>📝 Incidencias y Fotos</h3>
+    <input type="text" id="textoIncidencia" placeholder="¿Qué ha pasado hoy?">
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+        <input type="file" id="fotoIncidencia" accept="image/*" capture="environment">
+        <button class="btn" style="background: var(--verde);" onclick="agregarIncidencia()">GUARDAR INCIDENCIA</button>
     </div>
     <ul id="listaIncidencias" style="padding: 0;"></ul>
 </div>
 
 <script>
-    let viviendas = JSON.parse(localStorage.getItem('viviendas_pro_v2')) || {};
+    let viviendas = JSON.parse(localStorage.getItem('viviendas_data_v3')) || {};
     let viviendaActual = "";
     let calendar;
 
@@ -86,7 +88,7 @@
             lista.innerHTML += `
                 <div class="vivienda-card" onclick="abrirVivienda('${nombre}')">
                     <strong>${nombre}</strong>
-                    <span style="color: #666; font-size: 12px;">${viviendas[nombre].visitas.length} registros ➔</span>
+                    <span style="color: var(--azul);">Ver →</span>
                 </div>`;
         });
     }
@@ -99,11 +101,15 @@
         
         setTimeout(() => {
             const calendarEl = document.getElementById('calendar');
+            if(calendar) calendar.destroy();
             calendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: 'dayGridMonth',
-                locale: 'es',
-                headerToolbar: { left: 'prev,next today', center: 'title', right: '' },
-                events: viviendas[viviendaActual].visitas
+                locale: 'es', // FORZAR ESPAÑOL
+                firstDay: 1, // Lunes como primer día
+                buttonText: { today: 'Hoy' },
+                headerToolbar: { left: 'prev,next', center: 'title', right: 'today' },
+                events: viviendas[viviendaActual].visitas,
+                height: 'auto'
             });
             calendar.render();
         }, 100);
@@ -111,30 +117,33 @@
     }
 
     function registrarVisita(color, tipo) {
-        const fecha = prompt("Introduce la fecha (AAAA-MM-DD):", new Date().toISOString().split('T')[0]);
-        if (fecha) {
-            const nuevaVisita = { title: tipo, start: fecha, backgroundColor: color, borderColor: color, allDay: true };
-            viviendas[viviendaActual].visitas.push(nuevaVisita);
-            guardar();
-            calendar.addEvent(nuevaVisita);
-            if(tipo === 'PENDIENTE') alert("🔔 Recordatorio: Has marcado una visita pendiente para el " + fecha);
-        }
+        const hoy = new Date().toISOString().split('T')[0];
+        const nuevaVisita = { title: tipo, start: hoy, backgroundColor: color, borderColor: color, allDay: true };
+        
+        // Evitar duplicados el mismo día
+        viviendas[viviendaActual].visitas = viviendas[viviendaActual].visitas.filter(v => v.start !== hoy);
+        viviendas[viviendaActual].visitas.push(nuevaVisita);
+        
+        guardar();
+        calendar.removeAllEvents();
+        calendar.addEventSource(viviendas[viviendaActual].visitas);
+        alert("Guardado: Visita " + tipo);
     }
 
     function agregarIncidencia() {
         const texto = document.getElementById('textoIncidencia').value.trim();
         const fileInput = document.getElementById('fotoIncidencia');
-        if (!texto) { alert("Escribe una descripción"); return; }
+        if (!texto) return;
 
         if (fileInput.files && fileInput.files[0]) {
             const reader = new FileReader();
             reader.onload = function(e) {
-                viviendas[viviendaActual].incidencias.push({ texto, foto: e.target.result, fecha: new Date().toLocaleDateString() });
+                viviendas[viviendaActual].incidencias.unshift({ texto, foto: e.target.result, fecha: new Date().toLocaleString('es-ES') });
                 finalizarIncidencia();
             };
             reader.readAsDataURL(fileInput.files[0]);
         } else {
-            viviendas[viviendaActual].incidencias.push({ texto, foto: null, fecha: new Date().toLocaleDateString() });
+            viviendas[viviendaActual].incidencias.unshift({ texto, foto: null, fecha: new Date().toLocaleString('es-ES') });
             finalizarIncidencia();
         }
     }
@@ -162,27 +171,28 @@
     function generarPDF() {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
-        doc.setFontSize(18);
-        doc.text(`Informe: ${viviendaActual}`, 10, 20);
-        doc.setFontSize(12);
-        let y = 35;
-        doc.text("HISTORIAL DE VISITAS", 10, y);
+        doc.text(`INFORME DE GESTIÓN: ${viviendaActual}`, 10, 20);
+        let y = 30;
+        
+        doc.text("Visitas realizadas:", 10, y);
         y += 10;
         viviendas[viviendaActual].visitas.forEach(v => {
-            doc.text(`- ${v.start}: Visita ${v.title}`, 15, y);
+            doc.text(`- ${v.start}: ${v.title}`, 15, y);
             y += 7;
         });
+
         y += 10;
-        doc.text("INCIDENCIAS REGISTRADAS", 10, y);
+        doc.text("Incidencias:", 10, y);
         y += 10;
         viviendas[viviendaActual].incidencias.forEach(i => {
-            doc.text(`- [${i.fecha}] ${i.texto}`, 15, y);
+            doc.text(`- ${i.fecha}: ${i.texto}`, 15, y);
             y += 7;
         });
+        
         doc.save(`Informe_${viviendaActual}.pdf`);
     }
 
-    function guardar() { localStorage.setItem('viviendas_pro_v2', JSON.stringify(viviendas)); }
+    function guardar() { localStorage.setItem('viviendas_data_v3', JSON.stringify(viviendas)); }
     function volver() { document.getElementById('main-view').classList.remove('hidden'); document.getElementById('detail-view').classList.add('hidden'); }
 
     renderLista();
