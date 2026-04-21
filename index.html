@@ -21,7 +21,7 @@
         input[type="text"] { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
         .botones-visita { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 10px 0; }
         .fc-toolbar-title { text-transform: capitalize; font-size: 1.1em !important; }
-        .instruccion { font-size: 11px; color: #666; text-align: center; margin-bottom: 10px; display: block; }
+        .instruccion { font-size: 11px; color: #666; text-align: center; margin-bottom: 5px; display: block; }
     </style>
 </head>
 <body>
@@ -44,14 +44,15 @@
     <h2 id="tituloVivienda" style="background: #eee; padding: 5px; border-radius: 5px;"></h2>
 
     <div style="background: #e9ecef; padding: 12px; border-radius: 8px; text-align: center;">
-        <span class="instruccion">1º SELECCIONA EL TIPO DE VISITA Y 2º ELIGE LA FECHA</span>
+        <span class="instruccion">PARA MARCAR: ELIGE COLOR Y TOCA DÍA VACÍO</span>
+        <span class="instruccion">PARA BORRAR: TOCA EL COLOR YA MARCADO</span>
         <div class="botones-visita">
             <button class="btn" id="btn-Normal" style="background: var(--azul);" onclick="setTipo('Normal', '#007bff')">ORDINARIA</button>
             <button class="btn" id="btn-Urgente" style="background: var(--rojo);" onclick="setTipo('Urgente', '#dc3545')">URGENTE</button>
             <button class="btn" id="btn-PENDIENTE" style="background: var(--amarillo); color: black;" onclick="setTipo('PENDIENTE', '#ffc107')">PENDIENTE</button>
             <button class="btn" id="btn-Programada" style="background: var(--verde);" onclick="setTipo('Programada', '#28a745')">PROGRAMADA</button>
         </div>
-        <small id="status-tipo" style="font-weight: bold; color: var(--azul);">Seleccionado: ORDINARIA (Toca un día en el calendario)</small>
+        <small id="status-tipo" style="font-weight: bold; color: var(--azul);">Modo: ORDINARIA</small>
     </div>
 
     <div id="calendar"></div>
@@ -67,14 +68,14 @@
 </div>
 
 <script>
-    let viviendas = JSON.parse(localStorage.getItem('viviendas_v6_final')) || {};
+    let viviendas = JSON.parse(localStorage.getItem('viviendas_v7_del')) || {};
     let viviendaActual = "";
     let calendar;
     let tipoSeleccionado = { nombre: 'Normal', color: '#007bff' };
 
     function setTipo(nombre, color) {
         tipoSeleccionado = { nombre, color };
-        document.getElementById('status-tipo').innerText = "Seleccionado: " + nombre.toUpperCase() + " (Toca un día en el calendario)";
+        document.getElementById('status-tipo').innerText = "Modo: " + nombre.toUpperCase();
         document.getElementById('status-tipo').style.color = color === '#ffc107' ? 'black' : color;
     }
 
@@ -118,10 +119,10 @@
                 headerToolbar: { left: 'prev,next', center: 'title', right: 'today' },
                 events: viviendas[viviendaActual].visitas,
                 height: 'auto',
-                selectable: true,
                 dateClick: function(info) {
-                    const confirmar = confirm("¿Marcar el día " + info.dateStr + " como " + tipoSeleccionado.nombre + "?");
-                    if (confirmar) {
+                    // Si el día está vacío, añadimos
+                    const yaExiste = viviendas[viviendaActual].visitas.find(v => v.start === info.dateStr);
+                    if (!yaExiste) {
                         const nuevaVisita = { 
                             title: tipoSeleccionado.nombre, 
                             start: info.dateStr, 
@@ -132,6 +133,17 @@
                         viviendas[viviendaActual].visitas.push(nuevaVisita);
                         guardar();
                         calendar.addEvent(nuevaVisita);
+                    }
+                },
+                eventClick: function(info) {
+                    // Si pulsamos sobre un evento (color), preguntamos para borrar
+                    if (confirm("¿Quieres eliminar esta visita de " + info.event.title + "?")) {
+                        // Borrar del array
+                        viviendas[viviendaActual].visitas = viviendas[viviendaActual].visitas.filter(v => 
+                            !(v.start === info.event.startStr && v.title === info.event.title)
+                        );
+                        guardar();
+                        info.event.remove(); // Borrar del calendario
                     }
                 }
             });
@@ -178,7 +190,7 @@
         const doc = new jsPDF();
         doc.text(`INFORME: ${viviendaActual}`, 10, 20);
         let y = 35;
-        viviendas[viviendaActual].visitas.forEach(v => { 
+        viviendas[viviendaActual].visitas.sort((a,b) => a.start.localeCompare(b.start)).forEach(v => { 
             doc.text(`- ${v.start}: ${v.title}`, 15, y); 
             y += 7; 
             if(y > 280) { doc.addPage(); y = 20; }
@@ -186,7 +198,7 @@
         doc.save(`Informe_${viviendaActual}.pdf`);
     }
 
-    function guardar() { localStorage.setItem('viviendas_v6_final', JSON.stringify(viviendas)); }
+    function guardar() { localStorage.setItem('viviendas_v7_del', JSON.stringify(viviendas)); }
     function volver() { document.getElementById('main-view').classList.remove('hidden'); document.getElementById('detail-view').classList.add('hidden'); }
     renderLista();
 </script>
