@@ -11,16 +11,15 @@
         body { font-family: 'Segoe UI', Arial, sans-serif; background: #f4f7f6; margin: 0; padding: 10px; color: #333; }
         .container { max-width: 600px; margin: auto; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         h1, h2 { text-align: center; color: var(--oscuro); margin-bottom: 10px; }
-        .btn { padding: 12px; border: none; border-radius: 8px; color: white; cursor: pointer; font-weight: bold; font-size: 14px; transition: 0.2s; }
+        .btn { padding: 12px; border: none; border-radius: 8px; color: white; cursor: pointer; font-weight: bold; font-size: 13px; transition: 0.2s; text-transform: uppercase; }
         .btn:active { transform: scale(0.95); }
         .vivienda-card { background: #fff; border: 1px solid #ddd; padding: 15px; margin-bottom: 10px; border-radius: 8px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
         #calendar { margin: 15px 0; background: white; font-size: 0.9em; border: 1px solid #eee; border-radius: 8px; padding: 5px; }
-        .fc-header-toolbar { font-size: 0.85em; flex-wrap: wrap; gap: 5px; }
         .incidencia-item { border-left: 5px solid var(--rojo); background: #fff5f5; padding: 10px; margin: 8px 0; border-radius: 4px; list-style: none; font-size: 14px; }
         .img-preview { max-width: 100%; height: auto; display: block; margin-top: 8px; border-radius: 5px; border: 1px solid #ccc; }
         .hidden { display: none; }
         input[type="text"] { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
-        .botones-visita { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin: 10px 0; }
+        .botones-visita { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 10px 0; }
         .fc-toolbar-title { text-transform: capitalize; }
     </style>
 </head>
@@ -29,8 +28,8 @@
 <div class="container" id="main-view">
     <h1>🏠 Mis Viviendas</h1>
     <div style="margin-bottom: 15px;">
-        <input type="text" id="nombreVivienda" placeholder="Ej: Calle Mayor 5 / Casa Playa">
-        <button class="btn" style="background: var(--verde); width: 100%;" onclick="agregarVivienda()">+ AÑADIR VIVIENDA</button>
+        <input type="text" id="nombreVivienda" placeholder="Ej: Calle Mayor 5">
+        <button class="btn" style="background: var(--oscuro); width: 100%;" onclick="agregarVivienda()">+ AÑADIR VIVIENDA</button>
     </div>
     <div id="listaViviendas"></div>
 </div>
@@ -38,17 +37,18 @@
 <div class="container hidden" id="detail-view">
     <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
         <button class="btn" style="background: #6c757d;" onclick="volver()">← Volver</button>
-        <button class="btn" style="background: var(--oscuro);" onclick="generarPDF()">📄 Informe PDF</button>
+        <button class="btn" style="background: var(--oscuro);" onclick="generarPDF()">📄 PDF</button>
     </div>
     
     <h2 id="tituloVivienda" style="background: #eee; padding: 5px; border-radius: 5px;"></h2>
 
-    <div style="background: #e9ecef; padding: 12px; border-radius: 8px; text-align: center; margin-top: 10px;">
-        <small><strong>PULSA COLOR PARA REGISTRAR HOY:</strong></small>
+    <div style="background: #e9ecef; padding: 12px; border-radius: 8px; text-align: center;">
+        <small><strong>REGISTRAR VISITA (PULSA COLOR):</strong></small>
         <div class="botones-visita">
-            <button class="btn" style="background: var(--azul);" onclick="registrarVisita('#007bff', 'Normal')">AZUL</button>
-            <button class="btn" style="background: var(--rojo);" onclick="registrarVisita('#dc3545', 'Urgente')">ROJO</button>
-            <button class="btn" style="background: var(--amarillo); color: black;" onclick="registrarVisita('#ffc107', 'PENDIENTE')">AMARILLO</button>
+            <button class="btn" style="background: var(--azul);" onclick="registrarVisita('#007bff', 'Normal')">ORDINARIA (Azul)</button>
+            <button class="btn" style="background: var(--rojo);" onclick="registrarVisita('#dc3545', 'Urgente')">URGENTE (Rojo)</button>
+            <button class="btn" style="background: var(--amarillo); color: black;" onclick="registrarVisita('#ffc107', 'PENDIENTE')">PENDIENTE (Amarillo)</button>
+            <button class="btn" style="background: var(--verde);" onclick="registrarVisita('#28a745', 'Programada')">PROGRAMADA (Verde)</button>
         </div>
     </div>
 
@@ -56,16 +56,16 @@
 
     <hr>
     <h3>📝 Incidencias y Fotos</h3>
-    <input type="text" id="textoIncidencia" placeholder="Describe avería o nota...">
+    <input type="text" id="textoIncidencia" placeholder="Nota o avería...">
     <div style="display: flex; flex-direction: column; gap: 10px;">
         <input type="file" id="fotoIncidencia" accept="image/*" capture="environment">
-        <button class="btn" style="background: var(--verde);" onclick="agregarIncidencia()">GUARDAR INCIDENCIA</button>
+        <button class="btn" style="background: var(--verde);" onclick="agregarIncidencia()">GUARDAR NOTA</button>
     </div>
     <ul id="listaIncidencias" style="padding: 0;"></ul>
 </div>
 
 <script>
-    let viviendas = JSON.parse(localStorage.getItem('viviendas_v4_def')) || {};
+    let viviendas = JSON.parse(localStorage.getItem('viviendas_v5_green')) || {};
     let viviendaActual = "";
     let calendar;
 
@@ -103,8 +103,8 @@
             if(calendar) calendar.destroy();
             calendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: 'dayGridMonth',
-                locale: 'es', // IDIOMA ESPAÑOL
-                firstDay: 1,  // EMPEZAR EN LUNES
+                locale: 'es',
+                firstDay: 1, 
                 buttonText: { today: 'Hoy' },
                 headerToolbar: { left: 'prev,next', center: 'title', right: 'today' },
                 events: viviendas[viviendaActual].visitas,
@@ -116,23 +116,20 @@
     }
 
     function registrarVisita(color, tipo) {
-        const hoy = new Date().toLocaleDateString('sv-SE'); // Formato AAAA-MM-DD
-        const nuevaVisita = { title: tipo, start: hoy, backgroundColor: color, borderColor: color, allDay: true };
-        
-        // Evitar que el mismo día tenga dos colores (borra el anterior si existe hoy)
-        viviendas[viviendaActual].visitas = viviendas[viviendaActual].visitas.filter(v => v.start !== hoy);
-        viviendas[viviendaActual].visitas.push(nuevaVisita);
-        
-        guardar();
-        calendar.removeAllEvents();
-        calendar.addEventSource(viviendas[viviendaActual].visitas);
-        alert("¡Registrado hoy como " + tipo + "!");
+        const fecha = prompt("Introduce la fecha (AAAA-MM-DD):", new Date().toLocaleDateString('sv-SE'));
+        if (fecha) {
+            const nuevaVisita = { title: tipo, start: fecha, backgroundColor: color, borderColor: color, allDay: true };
+            viviendas[viviendaActual].visitas.push(nuevaVisita);
+            guardar();
+            calendar.addEvent(nuevaVisita);
+            alert("¡Visita " + tipo + " guardada!");
+        }
     }
 
     function agregarIncidencia() {
         const texto = document.getElementById('textoIncidencia').value.trim();
         const fileInput = document.getElementById('fotoIncidencia');
-        if (!texto) { alert("Escribe qué ha pasado"); return; }
+        if (!texto) return;
 
         if (fileInput.files && fileInput.files[0]) {
             const reader = new FileReader();
@@ -158,44 +155,21 @@
         const lista = document.getElementById('listaIncidencias');
         lista.innerHTML = "";
         viviendas[viviendaActual].incidencias.forEach(inc => {
-            lista.innerHTML += `
-                <li class="incidencia-item">
-                    <small>${inc.fecha}</small><br>
-                    <strong>${inc.texto}</strong>
-                    ${inc.foto ? `<img src="${inc.foto}" class="img-preview">` : ''}
-                </li>`;
+            lista.innerHTML += `<li class="incidencia-item"><small>${inc.fecha}</small><br><strong>${inc.texto}</strong>${inc.foto ? `<img src="${inc.foto}" class="img-preview">` : ''}</li>`;
         });
     }
 
     function generarPDF() {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
-        doc.setFontSize(16);
-        doc.text(`INFORME DE MANTENIMIENTO: ${viviendaActual}`, 10, 20);
-        doc.setFontSize(10);
+        doc.text(`INFORME: ${viviendaActual}`, 10, 20);
         let y = 35;
-        
-        doc.text("REGISTRO DE VISITAS:", 10, y);
-        y += 8;
-        viviendas[viviendaActual].visitas.forEach(v => {
-            doc.text(`- Día ${v.start}: Visita ${v.title}`, 15, y);
-            y += 6;
-        });
-
-        y += 10;
-        doc.text("INCIDENCIAS Y NOTAS:", 10, y);
-        y += 8;
-        viviendas[viviendaActual].incidencias.forEach(i => {
-            doc.text(`- [${i.fecha}] ${i.texto}`, 15, y);
-            y += 6;
-        });
-        
+        viviendas[viviendaActual].visitas.forEach(v => { doc.text(`- ${v.start}: ${v.title}`, 15, y); y += 7; });
         doc.save(`Informe_${viviendaActual}.pdf`);
     }
 
-    function guardar() { localStorage.setItem('viviendas_v4_def', JSON.stringify(viviendas)); }
+    function guardar() { localStorage.setItem('viviendas_v5_green', JSON.stringify(viviendas)); }
     function volver() { document.getElementById('main-view').classList.remove('hidden'); document.getElementById('detail-view').classList.add('hidden'); }
-
     renderLista();
 </script>
 </body>
